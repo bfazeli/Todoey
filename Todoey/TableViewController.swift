@@ -10,7 +10,7 @@ import UIKit
 
 class TableViewController: UITableViewController {
 
-    let sports: [String] = ["Soccer", "Basketball", "Tennis", "Volleyball"]
+    var sports: [String] = ["Soccer", "Basketball", "Tennis", "Volleyball"]
  
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -46,5 +46,25 @@ class TableViewController: UITableViewController {
         
     }
 
+    // MARK - Add New Items
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        var textInput = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            // What happens when user clicks Add Item
+            self.sports.append(textInput.text!)
+            self.tableView.reloadData()
+        }
+        
+        alert.addTextField { (textField) in
+            textField.placeholder = "Create new item"
+            textInput = textField
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
 }
 
