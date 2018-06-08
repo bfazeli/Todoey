@@ -11,10 +11,15 @@ import UIKit
 class TableViewController: UITableViewController {
 
     var sports: [String] = ["Soccer", "Basketball", "Tennis", "Volleyball"]
- 
+    let userDefaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+       
         // Do any additional setup after loading the view, typically from a nib.
+        if let items = userDefaults.array(forKey: "SportsArray") as? [String] {
+            sports = items
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -55,6 +60,9 @@ class TableViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // What happens when user clicks Add Item
             self.sports.append(textInput.text!)
+            
+            self.userDefaults.set(self.sports, forKey: "SportsArray")
+            
             self.tableView.reloadData()
         }
         
