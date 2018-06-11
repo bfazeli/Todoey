@@ -10,16 +10,21 @@ import UIKit
 
 class TableViewController: UITableViewController {
 
-    var sports: [String] = ["Soccer", "Basketball", "Tennis", "Volleyball"]
+    var sports = [Sport]()
     let userDefaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
        
+        sports.append(Sport(title: "Soccer"))
+        sports.append(Sport(title: "Tennis"))
+        sports.append(Sport(title: "Volleyball"))
+        sports.append(Sport(title: "Golf"))
+        
         // Do any additional setup after loading the view, typically from a nib.
-        if let items = userDefaults.array(forKey: "SportsArray") as? [String] {
-            sports = items
-        }
+//        if let items = userDefaults.array(forKey: "SportsArray") as? [String] {
+//            sports = items
+//        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -34,21 +39,21 @@ class TableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TableViewCell", for: indexPath)
         
-        cell.textLabel?.text = "I play " + sports[indexPath.row]
+        let sport = sports[indexPath.row]
+        
+        cell.textLabel?.text = "I play " + sport.getTitle()
+        cell.accessoryType = sport.isChecked() ? .checkmark : .none
         
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let sport = sports[indexPath.row]
         
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        tableView.cellForRow(at: indexPath)?.accessoryType = sport.isChecked() ? .none : .checkmark
+        sport.isChecked(!sport.isChecked())
         
         tableView.deselectRow(at: indexPath, animated: true)
-        
     }
 
     // MARK - Add New Items
@@ -59,7 +64,7 @@ class TableViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // What happens when user clicks Add Item
-            self.sports.append(textInput.text!)
+            self.sports.append(Sport(title: textInput.text!))
             
             self.userDefaults.set(self.sports, forKey: "SportsArray")
             
