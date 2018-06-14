@@ -8,7 +8,7 @@
 
 import Foundation
 
-class Sport {
+class Sport : Codable {
     private var title : String
     private var checked : Bool
     

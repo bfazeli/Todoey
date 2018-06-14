@@ -11,20 +11,20 @@ import UIKit
 class TableViewController: UITableViewController {
 
     var sports = [Sport]()
-    let userDefaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Sports.plist")
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
        
-        sports.append(Sport(title: "Soccer"))
-        sports.append(Sport(title: "Tennis"))
-        sports.append(Sport(title: "Volleyball"))
-        sports.append(Sport(title: "Golf"))
+        print(dataFilePath!)
         
         // Do any additional setup after loading the view, typically from a nib.
 //        if let items = userDefaults.array(forKey: "SportsArray") as? [String] {
 //            sports = items
 //        }
+        
+        loadItems()
     }
 
     override func didReceiveMemoryWarning() {
@@ -53,6 +53,8 @@ class TableViewController: UITableViewController {
         tableView.cellForRow(at: indexPath)?.accessoryType = sport.isChecked() ? .none : .checkmark
         sport.isChecked(!sport.isChecked())
         
+        saveItems()
+        
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
@@ -66,7 +68,8 @@ class TableViewController: UITableViewController {
             // What happens when user clicks Add Item
             self.sports.append(Sport(title: textInput.text!))
             
-            self.userDefaults.set(self.sports, forKey: "SportsArray")
+           
+            self.saveItems()
             
             self.tableView.reloadData()
         }
@@ -78,6 +81,28 @@ class TableViewController: UITableViewController {
         
         alert.addAction(action)
         present(alert, animated: true, completion: nil)
+    }
+    
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(sports)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array")
+        }
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                sports = try decoder.decode([Sport].self, from: data)
+            } catch {
+                print("Error decoding items")
+            }
+        }
     }
 }
 
