@@ -7,24 +7,22 @@
 //
 
 import UIKit
+import CoreData
 
 class TableViewController: UITableViewController {
 
-    var sports = [Sport]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Sports.plist")
+    @IBOutlet weak var searchBar: UISearchBar!
+    var sports = [Item]()
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       
-        print(dataFilePath!)
+        searchBar.placeholder = "Search"
+        print(dataFilePath)
         
-        // Do any additional setup after loading the view, typically from a nib.
-//        if let items = userDefaults.array(forKey: "SportsArray") as? [String] {
-//            sports = items
-//        }
-        
-        loadItems()
+       loadItems()
     }
 
     override func didReceiveMemoryWarning() {
@@ -41,8 +39,8 @@ class TableViewController: UITableViewController {
         
         let sport = sports[indexPath.row]
         
-        cell.textLabel?.text = "I play " + sport.getTitle()
-        cell.accessoryType = sport.isChecked() ? .checkmark : .none
+        cell.textLabel?.text = "I play " + sport.title!
+        cell.accessoryType = sport.done ? .checkmark : .none
         
         return cell
     }
@@ -50,8 +48,8 @@ class TableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let sport = sports[indexPath.row]
         
-        tableView.cellForRow(at: indexPath)?.accessoryType = sport.isChecked() ? .none : .checkmark
-        sport.isChecked(!sport.isChecked())
+        tableView.cellForRow(at: indexPath)?.accessoryType = sport.done ? .none : .checkmark
+        sport.done = !sport.done
         
         saveItems()
         
@@ -66,7 +64,10 @@ class TableViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             // What happens when user clicks Add Item
-            self.sports.append(Sport(title: textInput.text!))
+            let newItem = Item(context: self.context)
+            newItem.title = textInput.text!
+            newItem.done = false
+            self.sports.append(newItem)
             
            
             self.saveItems()
@@ -74,35 +75,47 @@ class TableViewController: UITableViewController {
             self.tableView.reloadData()
         }
         
+        let actionCancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        
         alert.addTextField { (textField) in
             textField.placeholder = "Create new item"
             textInput = textField
         }
         
         alert.addAction(action)
+        alert.addAction(actionCancel)
         present(alert, animated: true, completion: nil)
     }
     
     func saveItems() {
-        let encoder = PropertyListEncoder()
-        
         do {
-            let data = try encoder.encode(sports)
-            try data.write(to: dataFilePath!)
+            try context.save()
         } catch {
-            print("Error encoding item array")
+            print("Error saving context \(error)")
         }
     }
     
-    func loadItems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-                sports = try decoder.decode([Sport].self, from: data)
-            } catch {
-                print("Error decoding items")
-            }
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+        do {
+            sports = try context.fetch(request)
+        } catch {
+            print("Error fetching data from context \(error)")
         }
+        
+        tableView.reloadData()
+    }
+}
+
+extension TableViewController : UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.predicate = predicate
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request)
     }
 }
 
