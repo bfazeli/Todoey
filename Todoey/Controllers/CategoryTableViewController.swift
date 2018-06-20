@@ -26,6 +26,7 @@ class CategoryTableViewController: UITableViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    
     // MARK: - Table view data source
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -41,6 +42,22 @@ class CategoryTableViewController: UITableViewController {
         
         return cell
     }
+    
+    // MARK: - Table view delegate method
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "goToItems", sender: self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinationVC = segue.destination as! TodoListViewController
+        
+        if let indexPath = tableView.indexPathForSelectedRow {
+            destinationVC.selectedCategory = categories[indexPath.row]
+        }
+        
+    }
+    
     
     // MARK: - DATA Manipulation
     
@@ -61,6 +78,7 @@ class CategoryTableViewController: UITableViewController {
         } catch {
             print("Error saving context: \(error)")
         }
+        tableView.reloadData()
     }
     
     
@@ -82,8 +100,6 @@ class CategoryTableViewController: UITableViewController {
             self.categories.append(newCategory)
             
             self.saveCategories()
-            
-            self.tableView.reloadData()
         }
         
         let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
@@ -93,4 +109,6 @@ class CategoryTableViewController: UITableViewController {
         
         present(alert, animated: true, completion: nil)
     }
+    
+    
 }

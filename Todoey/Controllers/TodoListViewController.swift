@@ -9,13 +9,19 @@
 import UIKit
 import CoreData
 
-class TableViewController: UITableViewController {
+class TodoListViewController: UITableViewController {
 
     @IBOutlet weak var searchBar: UISearchBar!
-    var sports = [Item]()
+
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
+    var sports = [Item]()
+    var selectedCategory : Category? {
+        didSet {
+            loadItems()
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,7 +45,7 @@ class TableViewController: UITableViewController {
         
         let sport = sports[indexPath.row]
         
-        cell.textLabel?.text = "I play " + sport.title!
+        cell.textLabel?.text = sport.title!
         cell.accessoryType = sport.done ? .checkmark : .none
         
         return cell
@@ -67,6 +73,7 @@ class TableViewController: UITableViewController {
             let newItem = Item(context: self.context)
             newItem.title = textInput.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             self.sports.append(newItem)
             
            
@@ -95,7 +102,16 @@ class TableViewController: UITableViewController {
         }
     }
     
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), and predicate: NSPredicate? = nil) {
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
         do {
             sports = try context.fetch(request)
         } catch {
@@ -106,16 +122,15 @@ class TableViewController: UITableViewController {
     }
 }
 
-extension TableViewController : UISearchBarDelegate {
+extension TodoListViewController : UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
         let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-        request.predicate = predicate
         
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        loadItems(with: request)
+        loadItems(with: request, and: predicate)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {

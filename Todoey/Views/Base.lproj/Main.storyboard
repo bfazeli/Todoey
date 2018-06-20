@@ -41,7 +41,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
-                        <segue destination="L8g-7B-Smy" kind="show" id="FgU-mM-Xlc"/>
+                        <segue destination="L8g-7B-Smy" kind="show" identifier="goToItems" id="FgU-mM-Xlc"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="mt1-ns-IJ6" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -51,7 +51,7 @@
         <!--Items-->
         <scene sceneID="jy6-hk-RF8">
             <objects>
-                <tableViewController id="L8g-7B-Smy" customClass="TableViewController" customModule="Todoey" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController id="L8g-7B-Smy" customClass="TodoListViewController" customModule="Todoey" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" id="mJ8-xV-pTj">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
