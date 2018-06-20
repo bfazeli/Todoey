@@ -19,7 +19,7 @@ class TableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        searchBar.placeholder = "Search"
+        searchBar.placeholder = "Search.."
         print(dataFilePath)
         
        loadItems()
@@ -116,6 +116,20 @@ extension TableViewController : UISearchBarDelegate {
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
         loadItems(with: request)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text!.count == 0 {
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
+            
+            
+            // self.view.endEditing(true)
+        }
     }
 }
 
