@@ -9,8 +9,9 @@
 import UIKit
 import CoreData
 import RealmSwift
+import ChameleonFramework
 
-class CategoryTableViewController: UITableViewController {
+class CategoryTableViewController: SwipeTableViewController {
 
     let realm = try! Realm()
     var categories : Results<Category>?
@@ -21,7 +22,7 @@ class CategoryTableViewController: UITableViewController {
         print(realm.configuration.fileURL!)
         
         loadCategories()
-        tableView.reloadData()
+        tableView.separatorStyle = .none
     }
 
     override func didReceiveMemoryWarning() {
@@ -37,11 +38,16 @@ class CategoryTableViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         let category = categories?[indexPath.row]
         
         cell.textLabel?.text = category?.name ?? "No categories added yet"
+        if let color = category?.color {
+          
+            cell.backgroundColor = UIColor(hexString: color)
+            cell.textLabel?.textColor = ContrastColorOf(cell.backgroundColor!, returnFlat: true)
+        }
         
         return cell
     }
@@ -97,6 +103,7 @@ class CategoryTableViewController: UITableViewController {
         let addCategory = UIAlertAction(title: "Add", style: .default) { (_) in
             let newCategory = Category()
             newCategory.name = textInput.text!
+            newCategory.color = UIColor.randomFlat.hexValue()
             
             self.save(object: newCategory)
         }
@@ -109,5 +116,17 @@ class CategoryTableViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    
+    override func updateModel(at indexPath: IndexPath) {
+        if let category = categories?[indexPath.row] {
+            do {
+                try realm.write {
+                    realm.delete(category)
+                }
+            } catch {
+                print("Error deleting category")
+            }
+            
+            tableView.reloadData()
+        }
+    }
 }
